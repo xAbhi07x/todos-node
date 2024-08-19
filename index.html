@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo APP</title>
+</head>
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+    }
+
+    #mainArea {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        margin: 10px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
+
+    .todo-container {
+        margin-top: 20px;
+    }
+
+    .todo-item {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .todo-item button {
+        background-color: #f44336;
+        color: white;
+        padding: 8px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .todo-item button:hover {
+        background-color: #d32f2f;
+    }
+</style>
+</head>
+
+<body>
+<h1>Todo App</h1>
+<div id="mainArea">
+    <div class="todo-container">
+        <label for="title">Todo Title</label>
+        <input type="text" id="title" placeholder="Enter title">
+    </div>
+    <div class="todo-container">
+        <label for="description">Todo Description</label>
+        <input type="text" id="description" placeholder="Enter description">
+    </div>
+    <button onclick="onPress()">Add Todo</button>
+
+    <div class="todo-container">
+        <h2>Your Todos</h2>
+        <div id="todosList"></div>
+    </div>
+</div>
+<script>
+    
+function deleteDone(id) {
+    // Find the child element with the corresponding ID
+    var childElement = document.getElementById(id);
+
+    if (childElement) {
+        // Remove the child element if found
+        childElement.remove();
+    }
+}
+
+function deleteTodo(id) {
+    fetch("http://localhost:3000/todos/" + id, {
+        method: "DELETE",
+        headers: {
+            "Content-type": "application/json"
+        }
+    }).then(function () {
+        deleteDone(id); // Reference to deleteDone function
+    });
+}
+
+    function todosCallback(data){
+        var parentElement = document.getElementById("mainArea");
+        for(var i = 0; i<data.length; i++){
+        var childElement = document.createElement("div");
+
+        var grandChildElement1 = document.createElement("span");
+        grandChildElement1.innerHTML = data[i].title
+
+        var grandChildElement2 = document.createElement("span");
+        grandChildElement2.innerHTML = data[i].description
+
+        var grandChildElement3 = document.createElement("button");
+        grandChildElement3.innerHTML= "delete";
+        grandChildElement3.setAttribute("onclick", "deleteTodo("+data[i].id+")")
+
+        childElement.appendChild(grandChildElement1);
+        childElement.appendChild(grandChildElement2);
+        childElement.appendChild(grandChildElement3);
+
+        parentElement.appendChild(childElement);
+        }
+    }
+
+    function callback2(resp){
+        resp.json().then(todosCallback)
+    }
+    function getData(){
+        fetch("http://localhost:3000/todos", {
+            method: "GET"
+        }).then(callback2)
+    }
+
+    getData();
+
+
+    function parsedResponse(data) {
+        var parentElement = document.getElementById("mainArea");
+
+        var childElement = document.createElement("div");
+
+        var grandChildElement1 = document.createElement("span");
+        grandChildElement1.innerHTML = data.title
+
+        var grandChildElement2 = document.createElement("span");
+        grandChildElement2.innerHTML = data.description
+
+        var grandChildElement3 = document.createElement("button");
+        grandChildElement3.innerHTML= "delete";
+
+        childElement.appendChild(grandChildElement1);
+        childElement.appendChild(grandChildElement2);
+        childElement.appendChild(grandChildElement3);
+
+        parentElement.appendChild(childElement);
+    }
+
+    function callback(resp) {
+        resp.json().then(parsedResponse);
+    }
+
+    function onPress(event) {
+        var title = document.getElementById("title").value;
+        var description = document.getElementById("description").value;
+        fetch("http://localhost:3000/todos", {
+            method: "POST",
+            body: JSON.stringify({
+                title: title,
+                description: description
+            }),
+            headers: {
+                "Content-type": "application/json"
+            }
+        }).then(callback);
+    }
+    
+
+</script>
+    
+</body>
+</html>
